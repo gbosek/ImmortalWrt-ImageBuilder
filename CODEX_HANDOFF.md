@@ -13,15 +13,15 @@ Continue the N100 ImmortalWrt VM project in Codex cloud.
 
 ## Build status
 
-The first N100 build completed successfully.
+The latest N100 build completed successfully for use as an Unraid/KVM virtual disk.
 
 - Workflow: `Build N100 ImmortalWrt 25.12.x`
-- Run: #1
+- Run: #2
 - ImmortalWrt: 25.12.2
 - RootFS: 1 GB
 - Release tag: `N100-ImmortalWrt-25.12`
-- Artifact: `immortalwrt-25.12.2-x86-64-generic-squashfs-combined-efi.img.gz`
-- SHA256: `66d568bea5f98719ba78819b9156d690bb1c419f77b215b33f5300d2836ad91d`
+- Artifact: `immortalwrt-25.12.2-x86-64-generic-squashfs-combined-efi.img.gz` (raw EFI disk image for Unraid/KVM, not an ISO)
+- SHA256: `d213b0386bf7f95daf56434ce3ac3b32a6c6263d677698cfee790a3100c54f3b`
 
 ## VM target
 

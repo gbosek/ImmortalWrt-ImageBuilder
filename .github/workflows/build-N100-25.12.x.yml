@@ -1,0 +1,112 @@
+name: Build N100 ImmortalWrt 25.12.x
+
+on:
+  workflow_dispatch:
+    inputs:
+      luci_version:
+        description: "ImmortalWrt version"
+        required: true
+        default: "25.12.2"
+        type: choice
+        options:
+          - "25.12.2"
+          - "25.12.1"
+          - "25.12.0"
+      router_ip:
+        description: "N100 bypass-router IP"
+        required: true
+        default: "192.168.10.2"
+      gateway_ip:
+        description: "Main router / gateway IP"
+        required: true
+        default: "192.168.10.1"
+      dns_ip:
+        description: "Default DNS"
+        required: true
+        default: "192.168.10.1"
+  push:
+    branches:
+      - master
+    paths:
+      - ".github/workflows/build-N100-25.12.x.yml"
+      - "x86-64/build-n100-25.sh"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Resolve build parameters
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "LUCI_VERSION=${{ inputs.luci_version }}" >> "$GITHUB_ENV"
+            echo "ROUTER_IP=${{ inputs.router_ip }}" >> "$GITHUB_ENV"
+            echo "GATEWAY_IP=${{ inputs.gateway_ip }}" >> "$GITHUB_ENV"
+            echo "DNS_IP=${{ inputs.dns_ip }}" >> "$GITHUB_ENV"
+          else
+            echo "LUCI_VERSION=25.12.2" >> "$GITHUB_ENV"
+            echo "ROUTER_IP=192.168.10.2" >> "$GITHUB_ENV"
+            echo "GATEWAY_IP=192.168.10.1" >> "$GITHUB_ENV"
+            echo "DNS_IP=192.168.10.1" >> "$GITHUB_ENV"
+          fi
+          echo "PROFILE=1024" >> "$GITHUB_ENV"
+
+      - name: Set executable permissions
+        run: chmod +x "${{ github.workspace }}/x86-64/build-n100-25.sh"
+
+      - name: Build N100 ImmortalWrt 25.12.x
+        run: |
+          docker run --rm -i \
+            --user root \
+            -v "${{ github.workspace }}/bin:/home/build/immortalwrt/bin" \
+            -v "${{ github.workspace }}/files:/home/build/immortalwrt/files" \
+            -v "${{ github.workspace }}/x86-64/imm25.config:/home/build/immortalwrt/.config" \
+            -v "${{ github.workspace }}/x86-64/build-n100-25.sh:/home/build/immortalwrt/build-n100.sh" \
+            -e PROFILE="${PROFILE}" \
+            -e ROUTER_IP="${ROUTER_IP}" \
+            -e GATEWAY_IP="${GATEWAY_IP}" \
+            -e DNS_IP="${DNS_IP}" \
+            "immortalwrt/imagebuilder:x86-64-openwrt-${LUCI_VERSION}" \
+            /bin/bash /home/build/immortalwrt/build-n100.sh
+
+      - name: Create release notes
+        run: |
+          cat > "${{ github.workspace }}/n100-info.md" <<EOF
+          ## N100 ImmortalWrt 25.12.x
+
+          - ImmortalWrt: ${LUCI_VERSION}
+          - RootFS: 1 GB
+          - Management IP: ${ROUTER_IP}
+          - Gateway: ${GATEWAY_IP}
+          - DNS: ${DNS_IP}
+          - DHCP / DHCPv6 / RA server: disabled
+          - Chinese LuCI: enabled
+          - ttyd Web terminal: enabled
+          - Disk/file/package management: enabled
+          - Scheduled reboot: enabled
+          - Nikki + Mihomo: included
+          - OpenClash kernel modules: included; OpenClash itself is not preinstalled
+          - Cloudflared / Docker / PPPoE: not included
+          - Intel i225/i226 igc driver: included
+
+          VM recommendation: 1 GB RAM, 2 vCPU, VirtIO NIC.
+          EOF
+
+      - name: Upload N100 firmware as release assets
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: N100-ImmortalWrt-25.12
+          name: N100 ImmortalWrt 25.12
+          body_path: "${{ github.workspace }}/n100-info.md"
+          files: |
+            ${{ github.workspace }}/bin/targets/x86/64/*squashfs-combined-efi.img.gz
+          token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

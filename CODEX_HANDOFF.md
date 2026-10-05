@@ -32,7 +32,7 @@ The first N100 build completed successfully.
 - Firmware: OVMF / UEFI
 - NIC: VirtIO
 - Network bridge: br0
-- N100 ImmortalWrt management IP: `192.168.10.2`
+- N100 ImmortalWrt management IP: `192.168.10.222`
 - Main router/gateway/DNS: `192.168.10.1`
 - Unraid host: `192.168.10.99`
 - Unraid currently uses `192.168.10.2` as its default gateway

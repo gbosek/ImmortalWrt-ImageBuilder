@@ -15,7 +15,7 @@ on:
       router_ip:
         description: "N100 bypass-router IP"
         required: true
-        default: "192.168.10.2"
+        default: "192.168.10.222"
       gateway_ip:
         description: "Main router / gateway IP"
         required: true
@@ -52,7 +52,7 @@ jobs:
             echo "DNS_IP=${{ inputs.dns_ip }}" >> "$GITHUB_ENV"
           else
             echo "LUCI_VERSION=25.12.2" >> "$GITHUB_ENV"
-            echo "ROUTER_IP=192.168.10.2" >> "$GITHUB_ENV"
+            echo "ROUTER_IP=192.168.10.222" >> "$GITHUB_ENV"
             echo "GATEWAY_IP=192.168.10.1" >> "$GITHUB_ENV"
             echo "DNS_IP=192.168.10.1" >> "$GITHUB_ENV"
           fi
@@ -107,6 +107,7 @@ jobs:
           body_path: "${{ github.workspace }}/n100-info.md"
           files: |
             ${{ github.workspace }}/bin/targets/x86/64/*squashfs-combined-efi.img.gz
+          overwrite_files: true
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
